@@ -27,6 +27,7 @@
     <!-- Modules Maven -->
     <modules>
         <!-- Ajoutés au fil des étapes -->
+        <module>mission-events-contract</module>
     </modules>
 
     <!-- Propriétés -->
