@@ -1,0 +1,9 @@
+target/
+node_modules/
+dist/
+.angular/
+*.iml
+.idea/
+.vscode/
+*.log
+.DS_Store
