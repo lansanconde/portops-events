@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mission-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/missions}
+    username: ${DB_USER:portops}
+    password: ${DB_PASSWORD:portops}   # dev uniquement : en prod, secret injecté (Vault / K8s Secret)
+  jpa:
+    open-in-view: false                # évite le lazy-loading caché dans la couche web
+    hibernate:
+      ddl-auto: validate               # le schéma appartient à Flyway, jamais à Hibernate
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all                        # attendre toutes les répliques in-sync
+      properties:
+        enable.idempotence: true       # pas de doublon créé par les retries du producteur
+        max.in.flight.requests.per.connection: 5   # <= 5 obligatoire avec l'idempotence, ordre conservé
+        delivery.timeout.ms: 120000
+        linger.ms: 5
+        compression.type: lz4
+
+portops:
+  outbox:
+    batch-size: 100
+    poll-interval-ms: 500
+    send-timeout: 5s
+  kafka:
+    replication-factor: 1
+    min-insync-replicas: 1
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true                   # /actuator/health/liveness et /readiness pour Kubernetes
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
